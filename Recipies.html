@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipes</title>
+    <link rel="stylesheet" href="./assets/output.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="components/Recipies.js"></script>
+</head>
+<body>
+    <section class="header"></section>
+
+    <section class="categories flex flex-wrap container mx-auto justify-between"></section>
+    <h1 class="text-4xl text-center mt-7">All Recipes</h1>
+
+    <div class="search-container text-center mt-10">
+        <input type="search" id="searchInput" class="border-2 border-gray-300 rounded-lg px-4 py-2" placeholder="Search recipes...">
+        <button id="clearSearch" class="border-2 border-gray-300 rounded-lg px-4 py-2 ml-2">X</button>
+    </div>
+    <div id="searchdata" class="container grid grid-cols-4 gap-12 mx-auto mt-10"></div>
+    <div id="recipes" class="recipes container grid grid-cols-4 gap-12 mx-auto mt-10">
+        <!-- Cards -->
+    </div>
+
+    <div class="content"></div>
+
+    <section class="footer"></section>
+
+    <script type="module">
+        import Header from "./components/header.js";
+        import Footer from "./components/footer.js";
+        import axios from "../node_modules/axios/dist/esm/axios.js";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.header').innerHTML = Header();
+            document.querySelector('.footer').innerHTML = Footer();
+
+            const searchInput = document.getElementById('searchInput');
+            const clearSearch = document.getElementById('clearSearch');
+            const searchContainer = document.getElementById("searchdata");
+            const recipesContainer = document.querySelector(".recipes");
+            const search_url = 'https://dummyjson.com/recipes/search?q=';
+
+            const renderRecipes = (recipes, container) => {
+                container.innerHTML = '';
+                if (recipes && recipes.length > 0) {
+                    recipes.forEach((recipe) => {
+                        const recipeElement = document.createElement("div");
+                        recipeElement.innerHTML = `
+                            <div class="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                                <a href="#">
+                                    <img class="rounded-t-lg mx-auto" src="${recipe.image}" alt="${recipe.name}" />
+                                </a>
+                                <div class="p-5">
+                                    <a href="#">
+                                        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">${recipe.name}</h5>
+                                    </a>
+                                    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 line-clamp-3">${recipe.ingredients}</p>
+                                    <a href="#" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                        Read more
+                                        <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>`;
+                        container.appendChild(recipeElement);
+                    });
+                } else {
+                    container.innerHTML = '<p class="text-center">No recipes found.</p>';
+                }
+            };
+
+            const fetchRecipes = (url, container) => {
+                axios.get(url)
+                    .then((response) => {
+                        const recipes = response.data.recipes;
+                        renderRecipes(recipes, container);
+                    })
+                    .catch((error) => console.error("Error fetching recipes data:", error));
+            };
+
+            if (searchInput) {
+                searchInput.addEventListener('keyup', event => {
+                    const title = event.target.value.trim().toLowerCase();
+                    if (event.keyCode === 13 && title) { 
+                        const url = `${search_url}${title}`;
+                        fetchRecipes(url, searchContainer);
+                        recipesContainer.style.display = 'none';
+                    }
+                });
+            }
+
+            if (clearSearch) {
+                clearSearch.addEventListener('click', () => {
+                    searchInput.value = '';
+                    searchContainer.innerHTML = '';
+                    recipesContainer.style.display = 'grid';
+                });
+            }
+
+            // Initial load of all recipes
+            fetchRecipes('https://dummyjson.com/recipes?limit=0', recipesContainer);
+
+            const recipesLink = document.getElementById('recipies');
+            if (recipesLink) {
+                recipesLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (localStorage.getItem('loggedInUser')) {
+                        window.location.href = 'Recipes.html';
+                    } else {
+                        window.location.href = 'http://127.0.0.1:5500/Register.html';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
